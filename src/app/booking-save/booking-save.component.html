@@ -28,15 +28,6 @@
         [(ngModel)]="booking.specialRequirements"
       ></textarea>
 
-      <label for="hallId">Hall ID</label>
-      <input id="hallId" name="hallId" type="text" required [(ngModel)]="booking.hall.id" />
-
-      <label for="userId">Requested By User ID</label>
-      <input id="userId" name="userId" type="text" required [(ngModel)]="booking.requestedBy.userId" />
-
-      <label for="createdAt">Created At</label>
-      <input id="createdAt" name="createdAt" type="datetime-local" required [(ngModel)]="booking.createdAt" />
-
       <button type="submit" [disabled]="bookingForm.invalid || isSaving">
         {{ isSaving ? 'Saving...' : 'Save Booking' }}
       </button>

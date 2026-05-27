@@ -3,7 +3,7 @@
     <h1>Booking System</h1>
     <p class="subtitle">Sign in with your account credentials</p>
 
-    <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
+    <form (ngSubmit)="login(loginForm)" #loginForm="ngForm" novalidate>
       <label for="username">Username</label>
       <input
         id="username"
@@ -11,8 +11,12 @@
         type="text"
         required
         [(ngModel)]="username"
+        #usernameModel="ngModel"
         placeholder="Enter username"
       />
+      <small *ngIf="usernameModel.invalid && usernameModel.touched" class="error">
+        Username is required.
+      </small>
 
       <label for="password">Password</label>
       <input
@@ -21,10 +25,16 @@
         type="password"
         required
         [(ngModel)]="password"
+        #passwordModel="ngModel"
         placeholder="Enter password"
       />
+      <small *ngIf="passwordModel.invalid && passwordModel.touched" class="error">
+        Password is required.
+      </small>
 
-      <button type="submit" [disabled]="loginForm.invalid">Login</button>
+      <button type="submit" [disabled]="loginForm.invalid || isSubmitting">
+        {{ isSubmitting ? 'Signing in...' : 'Login' }}
+      </button>
     </form>
 
     <p *ngIf="message" [class.success]="isSuccess" [class.error]="!isSuccess">
