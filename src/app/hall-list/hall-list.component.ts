@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 interface HallItem {
@@ -19,34 +19,57 @@ interface HallItem {
 @Component({
   selector: 'app-hall-list',
   imports: [CommonModule, RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './hall-list.component.html',
   styleUrl: './hall-list.component.css'
 })
-export class HallListComponent {
-  halls: HallItem[] = [];
-  isLoading = false;
+export class HallListComponent implements OnInit {
+  readonly halls = signal<HallItem[]>([]);
+  readonly isLoading = signal(false);
   errorMessage = '';
 
   private readonly getActiveUrl = 'http://203.94.72.18/trainee/api/production/hall/get/all/active';
+  private readonly http = inject(HttpClient);
 
-  constructor(private readonly http: HttpClient) {
+  ngOnInit(): void {
     this.loadActiveHalls();
   }
 
   loadActiveHalls(): void {
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.errorMessage = '';
 
     this.http.get<unknown>(this.getActiveUrl).subscribe({
       next: (response) => {
-        this.halls = this.extractHallList(response);
-        this.isLoading = false;
+        this.halls.set(this.extractHallList(response));
+        this.isLoading.set(false);
       },
-      error: () => {
-        this.isLoading = false;
-        this.errorMessage = 'Active halls load karanna bari una. API eka check karanna.';
+      error: (error: HttpErrorResponse) => {
+        this.isLoading.set(false);
+        this.errorMessage = this.extractErrorMessage(error);
       }
     });
+  }
+
+  private extractErrorMessage(error: HttpErrorResponse): string {
+    const errorBody = error.error as Record<string, unknown> | string | null;
+
+    if (typeof errorBody === 'string' && errorBody.trim()) {
+      return errorBody;
+    }
+
+    if (errorBody && typeof errorBody === 'object') {
+      const message = errorBody['message'] ?? errorBody['error'] ?? errorBody['detail'];
+      if (typeof message === 'string' && message.trim()) {
+        return message;
+      }
+    }
+
+    if (error.status === 401 || error.status === 403) {
+      return 'Unauthorized. Please sign in again to load active halls.';
+    }
+
+    return 'Active halls load karanna bari una. API eka check karanna.';
   }
 
   private extractHallList(response: unknown): HallItem[] {
@@ -89,9 +112,10 @@ export class HallListComponent {
     }
 
     const record = hall as Record<string, unknown>;
+    const belongsTo = record['belongs_to'] ?? record['belongsTo'];
 
     return {
-      id: typeof record['id'] === 'string' ? record['id'] : undefined,
+      id: record['id'] != null ? String(record['id']) : undefined,
       name: String(record['name'] ?? ''),
       description: String(record['description'] ?? ''),
       location: String(record['location'] ?? ''),
@@ -101,9 +125,7 @@ export class HallListComponent {
       hasWhiteboard: Boolean(record['hasWhiteboard']),
       status: Boolean(record['status']),
       belongs_to:
-        record['belongs_to'] === null || typeof record['belongs_to'] === 'string'
-          ? (record['belongs_to'] as string | null)
-          : null
+        belongsTo === null || typeof belongsTo === 'string' ? (belongsTo as string | null) : null
     };
   }
 }
