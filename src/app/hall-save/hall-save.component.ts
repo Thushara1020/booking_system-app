@@ -23,6 +23,7 @@ interface HallPayload {
   styleUrl: './hall-save.component.css'
 })
 export class HallSaveComponent {
+  private readonly maxCapacity = 1000;
   message = '';
   isSuccess = false;
   isSaving = false;
@@ -87,6 +88,23 @@ export class HallSaveComponent {
       belongs_to: selected.belongs_to ?? null
     };
     this.message = '';
+  }
+
+  onCapacityInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const parsedValue = Number(input.value);
+
+    if (Number.isNaN(parsedValue)) {
+      return;
+    }
+
+    const boundedValue = Math.min(Math.max(parsedValue, 1), this.maxCapacity);
+
+    if (boundedValue !== parsedValue) {
+      input.value = String(boundedValue);
+    }
+
+    this.hall.capacity = boundedValue;
   }
 
   saveHall(): void {

@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { clearAuthToken, storeAuthToken } from '../auth-token-storage';
 
 @Component({
   selector: 'app-login',
@@ -34,7 +35,7 @@ export class LoginComponent {
       return;
     }
 
-    sessionStorage.removeItem('authToken');
+    clearAuthToken();
     this.isSubmitting = true;
     this.message = '';
 
@@ -54,7 +55,7 @@ export class LoginComponent {
             return;
           }
 
-          sessionStorage.setItem('authToken', token);
+          storeAuthToken(token);
           this.isSuccess = true;
           this.message = 'Login successful!';
 

@@ -39,7 +39,17 @@
       <input id="location" name="location" type="text" required [(ngModel)]="hall.location" />
 
       <label for="capacity">Capacity</label>
-      <input id="capacity" name="capacity" type="number" min="1" required [(ngModel)]="hall.capacity" />
+      <input
+        id="capacity"
+        name="capacity"
+        type="number"
+        min="1"
+        max="1000"
+        required
+        [(ngModel)]="hall.capacity"
+        (input)="onCapacityInput($event)"
+      />
+      <small class="field-hint">Capacity must be between 1 and 1000.</small>
 
       <div class="checks">
         <label><input type="checkbox" name="hasProjector" [(ngModel)]="hall.hasProjector" /> Has projector</label>

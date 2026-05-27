@@ -1,4 +1,5 @@
 import { HttpInterceptorFn } from '@angular/common/http';
+import { getValidAuthToken } from './auth-token-storage';
 
 export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
   if (typeof window === 'undefined') {
@@ -9,7 +10,7 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
     return next(request);
   }
 
-  const token = window.sessionStorage.getItem('authToken');
+  const token = getValidAuthToken();
   if (!token) {
     return next(request);
   }
