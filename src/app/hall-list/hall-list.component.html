@@ -1,0 +1,59 @@
+<main class="hall-list-page">
+  <section class="hall-list-card">
+    <div class="header-row">
+      <h1>Active Halls</h1>
+      <div class="actions">
+        <button type="button" (click)="loadActiveHalls()" [disabled]="isLoading">
+          {{ isLoading ? 'Loading...' : 'Reload' }}
+        </button>
+        <a routerLink="/dashboard" class="link-btn">Menu</a>
+        <a routerLink="/booking-save" class="link-btn">Booking</a>
+        <a routerLink="/hall-save" class="link-btn">Go to Save/Update</a>
+      </div>
+    </div>
+
+    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+
+    <div class="table-wrap" *ngIf="!errorMessage">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Location</th>
+            <th>Capacity</th>
+            <th>Projector</th>
+            <th>AC</th>
+            <th>Whiteboard</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (!isLoading && halls.length === 0) {
+            <tr>
+              <td colspan="7" class="empty">No active halls found.</td>
+            </tr>
+          }
+
+          @for (hall of halls; track hall.id) {
+            <tr>
+              <td>
+                <strong>{{ hall.name }}</strong>
+                <div class="desc">{{ hall.description }}</div>
+              </td>
+              <td>{{ hall.location }}</td>
+              <td>{{ hall.capacity }}</td>
+              <td>{{ hall.hasProjector ? 'Yes' : 'No' }}</td>
+              <td>{{ hall.hasAc ? 'Yes' : 'No' }}</td>
+              <td>{{ hall.hasWhiteboard ? 'Yes' : 'No' }}</td>
+              <td>
+                <span [class.active]="hall.status" [class.inactive]="!hall.status">
+                  {{ hall.status ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
