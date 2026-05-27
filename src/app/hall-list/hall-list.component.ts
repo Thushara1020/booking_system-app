@@ -50,19 +50,60 @@ export class HallListComponent {
   }
 
   private extractHallList(response: unknown): HallItem[] {
-    if (Array.isArray(response)) {
-      return response as HallItem[];
-    }
+    const candidateArrays = this.collectCandidateArrays(response);
 
-    if (
-      typeof response === 'object' &&
-      response !== null &&
-      'data' in response &&
-      Array.isArray((response as { data: unknown }).data)
-    ) {
-      return (response as { data: HallItem[] }).data;
+    for (const candidate of candidateArrays) {
+      if (candidate.length > 0) {
+        return candidate.map((hall) => this.normalizeHall(hall)).filter(Boolean) as HallItem[];
+      }
     }
 
     return [];
+  }
+
+  private collectCandidateArrays(response: unknown): unknown[][] {
+    const candidates: unknown[][] = [];
+
+    if (Array.isArray(response)) {
+      candidates.push(response);
+    }
+
+    if (typeof response === 'object' && response !== null) {
+      const record = response as Record<string, unknown>;
+      const candidateKeys = ['data', 'items', 'content', 'result', 'rows', 'halls', 'activeHalls'];
+
+      for (const key of candidateKeys) {
+        const value = record[key];
+        if (Array.isArray(value)) {
+          candidates.push(value);
+        }
+      }
+    }
+
+    return candidates;
+  }
+
+  private normalizeHall(hall: unknown): HallItem | null {
+    if (typeof hall !== 'object' || hall === null) {
+      return null;
+    }
+
+    const record = hall as Record<string, unknown>;
+
+    return {
+      id: typeof record['id'] === 'string' ? record['id'] : undefined,
+      name: String(record['name'] ?? ''),
+      description: String(record['description'] ?? ''),
+      location: String(record['location'] ?? ''),
+      capacity: Number(record['capacity'] ?? 0),
+      hasProjector: Boolean(record['hasProjector']),
+      hasAc: Boolean(record['hasAc']),
+      hasWhiteboard: Boolean(record['hasWhiteboard']),
+      status: Boolean(record['status']),
+      belongs_to:
+        record['belongs_to'] === null || typeof record['belongs_to'] === 'string'
+          ? (record['belongs_to'] as string | null)
+          : null
+    };
   }
 }
