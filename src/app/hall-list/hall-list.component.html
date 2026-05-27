@@ -1,7 +1,10 @@
 <main class="hall-list-page">
   <section class="hall-list-card">
     <div class="header-row">
-      <h1>Active Halls</h1>
+      <div>
+        <h1>Active Halls</h1>
+        <p class="subtitle">{{ halls.length }} hall(s) loaded from the active halls API.</p>
+      </div>
       <div class="actions">
         <button type="button" (click)="loadActiveHalls()" [disabled]="isLoading">
           {{ isLoading ? 'Loading...' : 'Reload' }}
@@ -14,46 +17,57 @@
 
     <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
 
-    <div class="table-wrap" *ngIf="!errorMessage">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Location</th>
-            <th>Capacity</th>
-            <th>Projector</th>
-            <th>AC</th>
-            <th>Whiteboard</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (!isLoading && halls.length === 0) {
-            <tr>
-              <td colspan="7" class="empty">No active halls found.</td>
-            </tr>
-          }
+    <div class="loading" *ngIf="isLoading">Loading active halls...</div>
 
-          @for (hall of halls; track hall.id) {
-            <tr>
-              <td>
-                <strong>{{ hall.name }}</strong>
-                <div class="desc">{{ hall.description }}</div>
-              </td>
-              <td>{{ hall.location }}</td>
-              <td>{{ hall.capacity }}</td>
-              <td>{{ hall.hasProjector ? 'Yes' : 'No' }}</td>
-              <td>{{ hall.hasAc ? 'Yes' : 'No' }}</td>
-              <td>{{ hall.hasWhiteboard ? 'Yes' : 'No' }}</td>
-              <td>
-                <span [class.active]="hall.status" [class.inactive]="!hall.status">
-                  {{ hall.status ? 'Active' : 'Inactive' }}
-                </span>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    <div class="empty-state" *ngIf="!isLoading && !errorMessage && halls.length === 0">
+      No active halls found.
+    </div>
+
+    <div class="hall-grid" *ngIf="!isLoading && halls.length > 0">
+      @for (hall of halls; track hall.id ?? hall.name) {
+        <article class="hall-card-item">
+          <div class="hall-top">
+            <div>
+              <h2>{{ hall.name }}</h2>
+              <p>{{ hall.description }}</p>
+            </div>
+            <span [class.active]="hall.status" [class.inactive]="!hall.status">
+              {{ hall.status ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <dl>
+            <div>
+              <dt>ID</dt>
+              <dd>{{ hall.id || '-' }}</dd>
+            </div>
+            <div>
+              <dt>Location</dt>
+              <dd>{{ hall.location }}</dd>
+            </div>
+            <div>
+              <dt>Capacity</dt>
+              <dd>{{ hall.capacity }}</dd>
+            </div>
+            <div>
+              <dt>Projector</dt>
+              <dd>{{ hall.hasProjector ? 'Yes' : 'No' }}</dd>
+            </div>
+            <div>
+              <dt>AC</dt>
+              <dd>{{ hall.hasAc ? 'Yes' : 'No' }}</dd>
+            </div>
+            <div>
+              <dt>Whiteboard</dt>
+              <dd>{{ hall.hasWhiteboard ? 'Yes' : 'No' }}</dd>
+            </div>
+            <div>
+              <dt>Belongs To</dt>
+              <dd>{{ hall.belongs_to || '-' }}</dd>
+            </div>
+          </dl>
+        </article>
+      }
     </div>
   </section>
 </main>
