@@ -11,7 +11,6 @@
 
     <label for="hallSelector">Select active hall</label>
     <select
-      id="hallSelector"
       name="hallSelector"
       [(ngModel)]="selectedHallId"
       (ngModelChange)="onHallSelect()"
@@ -23,8 +22,6 @@
     </select>
 
     <form (ngSubmit)="saveHall()" #hallForm="ngForm" novalidate>
-      <label for="id">Hall ID</label>
-      <input id="id" name="id" type="text" [(ngModel)]="hall.id" readonly />
 
       <label for="name">Name</label>
       <input id="name" name="name" type="text" required [(ngModel)]="hall.name" />
