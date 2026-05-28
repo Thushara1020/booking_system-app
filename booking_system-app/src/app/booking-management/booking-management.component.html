@@ -1,0 +1,170 @@
+<div class="booking-shell">
+  <aside class="sidebar">
+    <div>
+      <div class="brand">Booking System</div>
+      <p class="sidebar-copy">Calendar-based booking management</p>
+    </div>
+
+    <nav class="nav">
+      <a routerLink="/dashboard">Dashboard</a>
+      <a routerLink="/halls">Hall Management</a>
+      <a routerLink="/bookings" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Booking Management</a>
+    </nav>
+
+    <button type="button" class="sign-out" (click)="signOut()">Sign out</button>
+  </aside>
+
+  <main class="booking-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Users / Staff</p>
+        <h1>Booking Management</h1>
+        <p class="subcopy">View booked days and times in the calendar, create new bookings, and approve or cancel them from the table.</p>
+      </div>
+
+      <button type="button" class="primary-action" (click)="openCreateModal()">+ New Booking</button>
+    </header>
+
+    <section class="summary-grid">
+      <article class="summary-card accent-blue">
+        <span>Total bookings</span>
+        <strong>{{ totalBookings }}</strong>
+      </article>
+
+      <article class="summary-card accent-green">
+        <span>Approved</span>
+        <strong>{{ approvedBookings }}</strong>
+      </article>
+
+      <article class="summary-card accent-amber">
+        <span>Pending</span>
+        <strong>{{ pendingBookings }}</strong>
+      </article>
+
+      <article class="summary-card accent-red">
+        <span>Cancelled</span>
+        <strong>{{ cancelledBookings }}</strong>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel calendar-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Calendar</p>
+            <h2>Booked days and time slots</h2>
+          </div>
+          <span class="panel-meta">Click a day to add booking</span>
+        </div>
+
+        <div *ngIf="isBrowser; else calendarFallback">
+          <full-calendar [options]="calendarOptions"></full-calendar>
+        </div>
+
+        <ng-template #calendarFallback>
+          <div class="empty-state">Calendar loads in the browser.</div>
+        </ng-template>
+      </article>
+
+      <article class="panel bookings-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Bookings</p>
+            <h2>Current schedule</h2>
+          </div>
+          <span class="panel-meta">Manage statuses</span>
+        </div>
+
+        <div *ngIf="errorMessage" class="alert">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="success">{{ successMessage }}</div>
+
+        <div *ngIf="!loading && !bookings.length && !errorMessage" class="empty-state">
+          No bookings have been loaded yet.
+        </div>
+
+        <div class="booking-list">
+          <article class="booking-card" *ngFor="let booking of bookings">
+            <div class="booking-top">
+              <div>
+                <h3>{{ booking.id }}</h3>
+                <p>{{ booking.hallName }}</p>
+              </div>
+
+              <span class="booking-status" [class.approved]="booking.status === 'Approved'" [class.cancelled]="booking.status === 'Cancelled'">
+                {{ booking.status }}
+              </span>
+            </div>
+
+            <div class="booking-meta">
+              <span>{{ booking.bookingDate }}</span>
+              <span>{{ booking.startTime }} - {{ booking.endTime }}</span>
+              <span>{{ booking.expectedParticipants }} participants</span>
+            </div>
+
+            <div class="card-actions">
+              <button type="button" class="secondary-action" (click)="openEditModal(booking)">Edit</button>
+              <button type="button" class="secondary-action approve" (click)="approveBooking(booking.id)">Approve</button>
+              <button type="button" class="secondary-action cancel" (click)="cancelBooking(booking.id)">Cancel</button>
+            </div>
+          </article>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()"></div>
+
+<section class="modal" *ngIf="modalOpen" aria-labelledby="booking-form-title">
+  <div class="modal-header">
+    <div>
+      <p class="eyebrow">Booking form</p>
+      <h2 id="booking-form-title">{{ editingBookingId ? 'Update Booking' : 'Create Booking' }}</h2>
+    </div>
+    <button type="button" class="close-button" (click)="closeModal()">✕</button>
+  </div>
+
+  <form class="modal-form" (ngSubmit)="saveBooking()" novalidate>
+    <div class="form-grid">
+      <label>
+        <span>Hall</span>
+        <select name="hallId" [(ngModel)]="form.hallId" required>
+          <option value="" disabled>Select hall</option>
+          <option *ngFor="let hall of halls" [value]="hall.id">{{ hall.name }} ({{ hall.location }})</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Date</span>
+        <input type="date" name="bookingDate" [(ngModel)]="form.bookingDate" required />
+      </label>
+
+      <label>
+        <span>Start Time</span>
+        <input type="time" name="startTime" [(ngModel)]="form.startTime" required />
+      </label>
+
+      <label>
+        <span>End Time</span>
+        <input type="time" name="endTime" [(ngModel)]="form.endTime" required />
+      </label>
+
+      <label class="full-width">
+        <span>Expected Participants</span>
+        <input type="number" name="expectedParticipants" [(ngModel)]="form.expectedParticipants" min="1" placeholder="120" required />
+      </label>
+    </div>
+
+    <div class="booking-hint">
+      <strong>Selected hall:</strong> {{ selectedHallName }}
+      <span *ngIf="selectedBooking">Editing: {{ selectedBooking.id }}</span>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="secondary-action" (click)="closeModal()">Cancel</button>
+      <button type="submit" class="primary-action" [disabled]="saving">
+        {{ saving ? 'Saving...' : (editingBookingId ? 'Update Booking' : 'Save Booking') }}
+      </button>
+    </div>
+  </form>
+</section>
