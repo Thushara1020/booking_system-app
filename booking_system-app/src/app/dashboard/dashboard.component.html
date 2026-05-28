@@ -1,0 +1,108 @@
+<div class="dashboard-shell">
+  <aside class="sidebar">
+    <div>
+      <div class="brand">Booking System</div>
+      <p class="sidebar-copy">Modern booking dashboard</p>
+    </div>
+
+    <nav class="nav">
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+      <a routerLink="/halls">Hall Management</a>
+      <a routerLink="/bookings">Booking Management</a>
+    </nav>
+
+    <button type="button" class="sign-out" (click)="signOut()">Sign out</button>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Overview</p>
+        <h1>Welcome back, {{ username }}</h1>
+      </div>
+      <div class="status-pill">Live hall feed</div>
+    </header>
+
+    <section class="summary-grid">
+      <article class="summary-card accent-blue">
+        <span>Active Halls</span>
+        <strong>{{ activeHallCount }}</strong>
+        <small>{{ loading ? 'Syncing from API...' : 'From active halls API' }}</small>
+      </article>
+
+      <article class="summary-card accent-green">
+        <span>Bookings</span>
+        <strong>{{ bookingCount }}</strong>
+        <small>Upcoming bookings scheduled</small>
+      </article>
+    </section>
+
+    <div *ngIf="errorMessage" class="alert">{{ errorMessage }}</div>
+
+    <section class="content-grid">
+      <article class="panel" id="halls">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Active halls</p>
+            <h2>Currently available venues</h2>
+          </div>
+          <span class="panel-meta">{{ activeHallCount }} total</span>
+        </div>
+
+        <div *ngIf="loading" class="empty-state">Loading active halls...</div>
+
+        <div *ngIf="!loading && !activeHalls.length && !errorMessage" class="empty-state">
+          No active halls were returned from the API.
+        </div>
+
+        <div class="hall-list" *ngIf="activeHalls.length">
+          <div class="hall-row" *ngFor="let hall of activeHalls">
+            <div class="hall-main">
+              <div class="hall-title-row">
+                <strong>{{ hall.name }}</strong>
+                <span class="hall-status" [class.active]="hall.status" [class.inactive]="!hall.status">
+                  {{ hall.status ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+              <p class="hall-description">{{ hall.description }}</p>
+              <p class="hall-location">{{ hall.location }}</p>
+              <div class="hall-tags">
+                <span>Projector: {{ hall.hasProjector ? 'Yes' : 'No' }}</span>
+                <span>AC: {{ hall.hasAc ? 'Yes' : 'No' }}</span>
+                <span>Whiteboard: {{ hall.hasWhiteboard ? 'Yes' : 'No' }}</span>
+              </div>
+            </div>
+            <div class="hall-meta">
+              <span>Capacity</span>
+              <strong>{{ hall.capacity ?? 'N/A' }}</strong>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel timeline-panel" id="bookings">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Bookings</p>
+            <h2>Upcoming schedule</h2>
+          </div>
+          <span class="panel-meta">Next 4 bookings</span>
+        </div>
+
+        <div class="timeline">
+          <div class="timeline-item" *ngFor="let booking of upcomingBookings">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-top">
+                <strong>{{ booking.reference }}</strong>
+                <span class="booking-status">{{ booking.status }}</span>
+              </div>
+              <p>{{ booking.guest }} · {{ booking.hall }}</p>
+              <small>{{ booking.date }} at {{ booking.time }}</small>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
