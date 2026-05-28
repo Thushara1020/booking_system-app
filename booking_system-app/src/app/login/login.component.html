@@ -1,0 +1,51 @@
+<main class="auth-shell">
+  <section class="auth-card" aria-labelledby="signin-title">
+    <div class="auth-badge">Secure Access</div>
+    <h1 id="signin-title">Sign in to booking system</h1>
+    <p class="auth-copy">
+      Enter your NIC and password to continue. Your JWT token is stored in sessionStorage after a
+      successful sign-in.
+    </p>
+
+    <form class="auth-form" (ngSubmit)="signIn()" novalidate>
+      <label class="field">
+        <span>Username / NIC</span>
+        <input
+          name="username"
+          type="text"
+          autocomplete="username"
+          placeholder="200110603336"
+          [(ngModel)]="username"
+          required
+        />
+      </label>
+
+      <label class="field">
+        <span>Password</span>
+        <input
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter your password"
+          [(ngModel)]="password"
+          required
+        />
+      </label>
+
+      <button class="submit-button" type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <p
+      *ngIf="message"
+      class="feedback"
+      [class.success]="messageType === 'success'"
+      [class.error]="messageType === 'error'"
+      role="status"
+      aria-live="polite"
+    >
+      {{ message }}
+    </p>
+  </section>
+</main>
