@@ -1,0 +1,163 @@
+<div class="hall-shell">
+  <aside class="sidebar">
+    <div>
+      <div class="brand">Booking System</div>
+      <p class="sidebar-copy">Hall management for admins and staff</p>
+    </div>
+
+    <nav class="nav">
+      <a routerLink="/dashboard">Dashboard</a>
+      <a routerLink="/halls" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Hall Management</a>
+      <a routerLink="/bookings">Booking Management</a>
+    </nav>
+
+    <button type="button" class="sign-out" (click)="signOut()">Sign out</button>
+  </aside>
+
+  <main class="hall-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Admin tools</p>
+        <h1>Hall Management</h1>
+        <p class="subcopy">Search active halls, edit existing entries, or add a new hall using the save/update modal.</p>
+      </div>
+
+      <button type="button" class="primary-action" (click)="openCreateModal()">+ Add Hall</button>
+    </header>
+
+    <section class="summary-grid">
+      <article class="summary-card accent-blue">
+        <span>Total active halls</span>
+        <strong>{{ totalCount }}</strong>
+      </article>
+
+      <article class="summary-card accent-green">
+        <span>Currently active</span>
+        <strong>{{ activeCount }}</strong>
+      </article>
+    </section>
+
+    <section class="filters-panel">
+      <div class="filter-field">
+        <label for="hall-name">Filter by name</label>
+        <input id="hall-name" type="text" [(ngModel)]="searchName" placeholder="Search hall name" />
+      </div>
+
+      <div class="filter-field">
+        <label for="hall-capacity">Filter by capacity</label>
+        <input id="hall-capacity" type="text" [(ngModel)]="searchCapacity" placeholder="e.g. 180" />
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Active halls</p>
+          <h2>Cards view</h2>
+        </div>
+        <span class="panel-meta">{{ filteredHalls.length }} shown</span>
+      </div>
+
+      <div *ngIf="loading" class="empty-state">Loading halls...</div>
+      <div *ngIf="errorMessage && !loading" class="alert">{{ errorMessage }}</div>
+      <div *ngIf="successMessage && !loading" class="success">{{ successMessage }}</div>
+
+      <div *ngIf="!loading && !filteredHalls.length && !errorMessage" class="empty-state">
+        No halls match the current filters.
+      </div>
+
+      <div class="hall-grid" *ngIf="filteredHalls.length">
+        <article class="hall-card" *ngFor="let hall of filteredHalls">
+          <div class="hall-card-top">
+            <div>
+              <p class="hall-location">{{ hall.location }}</p>
+              <h3>{{ hall.name }}</h3>
+            </div>
+
+            <span class="hall-status" [class.active]="hall.status" [class.inactive]="!hall.status">
+              {{ hall.status ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <p class="hall-description">{{ hall.description }}</p>
+
+          <div class="feature-tags">
+            <span>Capacity: {{ hall.capacity ?? 'N/A' }}</span>
+            <span>Projector: {{ hall.hasProjector ? 'Yes' : 'No' }}</span>
+            <span>AC: {{ hall.hasAc ? 'Yes' : 'No' }}</span>
+            <span>Whiteboard: {{ hall.hasWhiteboard ? 'Yes' : 'No' }}</span>
+          </div>
+
+          <div class="card-actions">
+            <button type="button" class="secondary-action" (click)="openEditModal(hall)">Update</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()"></div>
+
+<section class="modal" *ngIf="modalOpen" aria-labelledby="hall-form-title">
+  <div class="modal-header">
+    <div>
+      <p class="eyebrow">Save / Update Hall</p>
+      <h2 id="hall-form-title">{{ editingHallId ? 'Update Hall' : 'Add New Hall' }}</h2>
+    </div>
+    <button type="button" class="close-button" (click)="closeModal()">✕</button>
+  </div>
+
+  <form class="modal-form" (ngSubmit)="saveHall()" novalidate>
+    <div class="form-grid">
+      <label>
+        <span>Name</span>
+        <input type="text" name="name" [(ngModel)]="form.name" required placeholder="Hall name" />
+      </label>
+
+      <label>
+        <span>Capacity</span>
+        <input type="number" name="capacity" [(ngModel)]="form.capacity" placeholder="180" />
+      </label>
+
+      <label class="full-width">
+        <span>Description</span>
+        <textarea name="description" [(ngModel)]="form.description" rows="3" placeholder="Hall description"></textarea>
+      </label>
+
+      <label class="full-width">
+        <span>Location</span>
+        <input type="text" name="location" [(ngModel)]="form.location" required placeholder="Building A" />
+      </label>
+    </div>
+
+    <div class="switch-grid">
+      <label class="switch-row">
+        <span>Projector</span>
+        <input type="checkbox" name="hasProjector" [(ngModel)]="form.hasProjector" />
+      </label>
+
+      <label class="switch-row">
+        <span>AC</span>
+        <input type="checkbox" name="hasAc" [(ngModel)]="form.hasAc" />
+      </label>
+
+      <label class="switch-row">
+        <span>Whiteboard</span>
+        <input type="checkbox" name="hasWhiteboard" [(ngModel)]="form.hasWhiteboard" />
+      </label>
+
+      <label class="switch-row">
+        <span>Status</span>
+        <input type="checkbox" name="status" [(ngModel)]="form.status" />
+      </label>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="secondary-action" (click)="closeModal()">Cancel</button>
+      <button type="submit" class="primary-action" [disabled]="saving">
+        {{ saving ? 'Saving...' : (editingHallId ? 'Update Hall' : 'Save Hall') }}
+      </button>
+    </div>
+  </form>
+</section>
